@@ -1,0 +1,968 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Bibelcharaktere</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700&family=Lora:ital,wght@0,400;0,500;0,600;1,400&display=swap');
+
+:root{
+  --bg-deep:#161c33;
+  --bg-deeper:#10142a;
+  --bg-card-dark:#1e2646;
+  --parchment:#f4ead0;
+  --parchment-2:#ecdfb8;
+  --ink:#2b2113;
+  --ink-soft:#5c4d34;
+  --gold:#c9a24b;
+  --gold-bright:#dbb964;
+  --teal:#4f8f83;
+  --teal-bright:#63ab9d;
+  --text-light:#ede4cf;
+  --text-muted:#9b93a8;
+  --line:#2f3a5e;
+  --radius:14px;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+html,body{margin:0;padding:0;height:100%;}
+body{
+  background:var(--bg-deeper);
+  color:var(--text-light);
+  font-family:'Lora',Georgia,serif;
+  overscroll-behavior-y:none;
+}
+h1,h2,h3,.display{font-family:'Cinzel',serif;letter-spacing:.03em;}
+button{font-family:inherit;}
+input,textarea{font-family:'Lora',Georgia,serif;}
+
+#app{
+  max-width:480px;
+  margin:0 auto;
+  min-height:100vh;
+  display:flex;
+  flex-direction:column;
+  position:relative;
+  background:
+    radial-gradient(ellipse at top, #202a52 0%, var(--bg-deeper) 60%);
+}
+
+/* HEADER */
+header.topbar{
+  position:sticky; top:0; z-index:30;
+  display:flex; align-items:center; justify-content:space-between;
+  padding:16px 18px 12px;
+  background:linear-gradient(180deg, var(--bg-deeper) 70%, transparent);
+}
+.brand{display:flex;align-items:center;gap:9px;}
+.brand-mark{
+  width:30px;height:30px;border-radius:50%;
+  border:1.5px solid var(--gold);
+  display:flex;align-items:center;justify-content:center;
+  color:var(--gold-bright); font-family:'Cinzel',serif; font-size:14px; font-weight:600;
+}
+.brand-title{font-size:15px; font-weight:600; color:var(--text-light); text-transform:uppercase;}
+.icon-btn{
+  width:38px;height:38px;border-radius:50%;
+  background:rgba(201,162,75,0.12);
+  border:1px solid rgba(201,162,75,0.35);
+  color:var(--gold-bright);
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;
+}
+.icon-btn svg{width:17px;height:17px;}
+
+/* MAIN SCROLL AREA */
+main{flex:1; padding:4px 18px 100px; overflow-x:hidden;}
+.view{display:none;}
+.view.active{display:block; animation:fadein .25s ease;}
+@keyframes fadein{from{opacity:0; transform:translateY(6px);} to{opacity:1; transform:translateY(0);}}
+
+/* VERSE BANNER */
+.verse-banner{
+  position:relative;
+  background:var(--parchment);
+  color:var(--ink);
+  border-radius:16px;
+  padding:22px 20px 20px;
+  margin:10px 0 22px;
+  border:1px solid var(--gold);
+  box-shadow:0 10px 26px rgba(0,0,0,0.28);
+}
+.verse-banner::before{
+  content:"";
+  position:absolute; top:8px; left:8px; right:8px; bottom:8px;
+  border:1px solid rgba(201,162,75,0.55);
+  border-radius:10px;
+  pointer-events:none;
+}
+.verse-eyebrow{
+  font-family:'Cinzel',serif; font-size:11px; letter-spacing:.14em;
+  color:var(--gold-soft, #8a6c26); text-transform:uppercase; font-weight:600;
+  margin:0 0 10px;
+}
+.verse-text{
+  font-size:17px; line-height:1.55; font-style:italic; margin:0 0 10px;
+}
+.verse-ref{
+  font-family:'Cinzel',serif; font-size:12.5px; font-weight:600; color:var(--ink-soft);
+}
+
+/* SECTION HEADS */
+.section-head{
+  display:flex; align-items:baseline; justify-content:space-between;
+  margin:0 0 12px;
+}
+.section-head h2{font-size:16px; margin:0; color:var(--text-light);}
+.section-head .link{font-size:12px; color:var(--teal-bright); cursor:pointer; font-family:'Lora',serif;}
+
+/* SEARCH */
+.search-wrap{position:relative; margin:8px 0 14px;}
+.search-wrap svg{
+  position:absolute; left:14px; top:50%; transform:translateY(-50%);
+  width:16px; height:16px; color:var(--text-muted);
+}
+.search-wrap input{
+  width:100%;
+  background:var(--bg-card-dark);
+  border:1px solid var(--line);
+  border-radius:12px;
+  padding:12px 14px 12px 38px;
+  color:var(--text-light);
+  font-size:14.5px;
+  outline:none;
+}
+.search-wrap input::placeholder{color:var(--text-muted);}
+.search-wrap input:focus{border-color:var(--teal);}
+
+/* CHIPS */
+.chip-row{display:flex; gap:8px; overflow-x:auto; padding:2px 0 16px; scrollbar-width:none;}
+.chip-row::-webkit-scrollbar{display:none;}
+.chip{
+  flex:0 0 auto;
+  padding:7px 14px;
+  border-radius:999px;
+  font-size:12.5px;
+  border:1px solid var(--line);
+  color:var(--text-muted);
+  background:var(--bg-card-dark);
+  cursor:pointer;
+  white-space:nowrap;
+}
+.chip.active{
+  background:rgba(79,143,131,0.22);
+  border-color:var(--teal);
+  color:var(--teal-bright);
+}
+
+/* CHARACTER CARD (list) */
+.char-list{display:flex; flex-direction:column; gap:10px;}
+.char-card{
+  display:flex; align-items:center; gap:13px;
+  background:var(--bg-card-dark);
+  border:1px solid var(--line);
+  border-radius:12px;
+  padding:12px 14px;
+  cursor:pointer;
+}
+.char-card:active{background:#242c52;}
+.char-initial{
+  flex:0 0 44px; width:44px; height:44px; border-radius:10px;
+  border:1px solid var(--gold);
+  background:linear-gradient(160deg, rgba(201,162,75,0.18), rgba(201,162,75,0.04));
+  display:flex; align-items:center; justify-content:center;
+  font-family:'Cinzel',serif; font-size:18px; font-weight:600; color:var(--gold-bright);
+}
+.char-info{flex:1; min-width:0;}
+.char-name{font-size:15px; font-weight:600; color:var(--text-light); font-family:'Lora',serif; margin:0 0 3px;}
+.char-meta{font-size:11px; color:var(--teal-bright); font-family:'Cinzel',serif; letter-spacing:.04em; margin:0 0 4px;}
+.char-teaser{font-size:12.5px; color:var(--text-muted); margin:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+.bm-star{flex:0 0 auto; color:var(--gold-bright); opacity:0; width:16px; height:16px;}
+.bm-star.on{opacity:1;}
+
+.empty-note{
+  text-align:center; color:var(--text-muted); font-size:13.5px; padding:40px 20px; line-height:1.6;
+}
+
+/* FEATURED HOME CARDS */
+.featured-scroll{display:flex; gap:12px; overflow-x:auto; padding:2px 2px 6px; scrollbar-width:none;}
+.featured-scroll::-webkit-scrollbar{display:none;}
+.featured-card{
+  flex:0 0 132px;
+  background:var(--bg-card-dark);
+  border:1px solid var(--line);
+  border-radius:12px;
+  padding:14px 12px;
+  cursor:pointer;
+  text-align:center;
+}
+.featured-card .char-initial{margin:0 auto 10px; flex:none; width:46px; height:46px;}
+.featured-card .char-name{font-size:13.5px; margin-bottom:2px;}
+.featured-card .char-meta{font-size:10px;}
+
+/* DETAIL VIEW */
+#detail-view{
+  position:fixed; inset:0; z-index:50;
+  background:var(--bg-deeper);
+  max-width:480px; margin:0 auto;
+  transform:translateY(100%);
+  transition:transform .3s cubic-bezier(.32,.72,0,1);
+  overflow-y:auto;
+}
+#detail-view.open{transform:translateY(0);}
+.detail-header{
+  position:sticky; top:0; z-index:5;
+  display:flex; align-items:center; justify-content:space-between;
+  padding:16px 16px 10px;
+  background:linear-gradient(180deg, var(--bg-deeper) 75%, transparent);
+}
+.detail-body{padding:0 22px 60px;}
+.illum-frame{
+  width:74px; height:74px; margin:6px auto 18px;
+  border:2px solid var(--gold);
+  border-radius:10px;
+  position:relative;
+  display:flex; align-items:center; justify-content:center;
+  background:radial-gradient(circle at 30% 25%, rgba(201,162,75,0.28), rgba(201,162,75,0.04));
+}
+.illum-frame::before,.illum-frame::after{
+  content:""; position:absolute; width:10px; height:10px; border:1px solid var(--gold);
+}
+.illum-frame::before{top:-5px; left:-5px; border-right:none; border-bottom:none;}
+.illum-frame::after{bottom:-5px; right:-5px; border-left:none; border-top:none;}
+.illum-letter{font-family:'Cinzel',serif; font-size:34px; font-weight:700; color:var(--gold-bright);}
+.detail-name{font-size:25px; text-align:center; margin:0 0 8px; color:var(--text-light);}
+.detail-badges{display:flex; justify-content:center; gap:8px; margin:0 0 24px; flex-wrap:wrap;}
+.badge{
+  font-family:'Cinzel',serif; font-size:10.5px; letter-spacing:.05em; text-transform:uppercase;
+  padding:5px 11px; border-radius:999px; border:1px solid var(--line); color:var(--text-muted);
+}
+.badge.testament{border-color:var(--teal); color:var(--teal-bright);}
+
+.detail-h3{
+  font-family:'Cinzel',serif; font-size:12.5px; letter-spacing:.1em; text-transform:uppercase;
+  color:var(--gold-bright); margin:26px 0 10px;
+  display:flex; align-items:center; gap:10px;
+}
+.detail-h3::after{content:""; flex:1; height:1px; background:var(--line);}
+.story-text{font-size:15.5px; line-height:1.75; color:var(--text-light); margin:0;}
+
+.lesson-box{
+  background:rgba(79,143,131,0.10);
+  border-left:3px solid var(--teal);
+  border-radius:0 10px 10px 0;
+  padding:14px 16px;
+  font-size:14.5px; line-height:1.65; color:var(--text-light);
+}
+.verse-line{
+  font-size:14px; color:var(--text-muted); font-family:'Cinzel',serif; letter-spacing:.03em;
+}
+
+.notes-area{
+  width:100%; min-height:100px; resize:vertical;
+  background:var(--bg-card-dark); border:1px solid var(--line); border-radius:10px;
+  color:var(--text-light); padding:12px 14px; font-size:14px; line-height:1.6; outline:none;
+}
+.notes-area:focus{border-color:var(--teal);}
+.save-row{display:flex; align-items:center; gap:10px; margin-top:10px;}
+.save-btn{
+  background:rgba(79,143,131,0.18); border:1px solid var(--teal); color:var(--teal-bright);
+  padding:9px 18px; border-radius:9px; font-size:13px; cursor:pointer; font-family:'Cinzel',serif; letter-spacing:.04em;
+}
+.save-hint{font-size:11.5px; color:var(--text-muted);}
+
+.bookmark-toggle{
+  display:flex; align-items:center; gap:7px;
+  background:rgba(201,162,75,0.10); border:1px solid var(--gold);
+  padding:8px 14px; border-radius:9px; cursor:pointer;
+  font-size:12.5px; color:var(--gold-bright); font-family:'Cinzel',serif; letter-spacing:.03em;
+}
+.bookmark-toggle svg{width:15px; height:15px;}
+.bookmark-toggle.active{background:rgba(201,162,75,0.28);}
+
+/* MERKLISTE */
+.merk-card{
+  background:var(--bg-card-dark); border:1px solid var(--line); border-radius:12px;
+  padding:14px 15px; margin-bottom:12px; cursor:pointer;
+}
+.merk-top{display:flex; align-items:center; gap:12px; margin-bottom:8px;}
+.merk-note-preview{
+  font-size:12.5px; color:var(--text-muted); line-height:1.5; margin:8px 0 0;
+  border-top:1px solid var(--line); padding-top:8px;
+  overflow:hidden; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical;
+}
+
+/* BOTTOM NAV */
+nav.tabbar{
+  position:fixed; bottom:0; left:0; right:0; z-index:40;
+  max-width:480px; margin:0 auto;
+  background:rgba(16,20,42,0.94);
+  backdrop-filter:blur(6px);
+  border-top:1px solid var(--line);
+  display:flex;
+  padding:8px 10px calc(8px + env(safe-area-inset-bottom));
+}
+.tab-btn{
+  flex:1; display:flex; flex-direction:column; align-items:center; gap:4px;
+  background:none; border:none; color:var(--text-muted); cursor:pointer; padding:6px 0;
+}
+.tab-btn svg{width:21px; height:21px;}
+.tab-btn span{font-size:10.5px; font-family:'Cinzel',serif; letter-spacing:.04em;}
+.tab-btn.active{color:var(--gold-bright);}
+
+.intro-text{font-size:14px; color:var(--text-muted); line-height:1.6; margin:0 0 22px;}
+</style>
+</head>
+<body>
+<div id="app">
+
+  <header class="topbar">
+    <div class="brand">
+      <div class="brand-mark">B</div>
+      <div class="brand-title">Bibelcharaktere</div>
+    </div>
+    <button class="icon-btn" id="header-search-btn" aria-label="Suchen">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    </button>
+  </header>
+
+  <main>
+
+    <!-- HOME VIEW -->
+    <section class="view active" id="view-home">
+      <div class="verse-banner">
+        <p class="verse-eyebrow">Vers des Tages</p>
+        <p class="verse-text" id="verse-text"></p>
+        <p class="verse-ref" id="verse-ref"></p>
+      </div>
+
+      <p class="intro-text">Entdecke die Menschen der Bibel &ndash; ihre Geschichten, ihre Fehler, ihren Glauben, und was sie uns heute noch zu sagen haben.</p>
+
+      <div class="section-head">
+        <h2>Im Fokus</h2>
+        <span class="link" id="home-see-all">Alle ansehen &rarr;</span>
+      </div>
+      <div class="featured-scroll" id="featured-scroll"></div>
+
+      <div class="section-head" style="margin-top:28px;">
+        <h2>Kategorien</h2>
+      </div>
+      <div class="chip-row" id="home-categories"></div>
+    </section>
+
+    <!-- CHARAKTERE VIEW -->
+    <section class="view" id="view-list">
+      <div class="search-wrap">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input type="text" id="search-input" placeholder="Name oder Stichwort suchen&hellip;">
+      </div>
+      <div class="chip-row" id="list-chips"></div>
+      <div class="char-list" id="char-list"></div>
+    </section>
+
+    <!-- MERKLISTE VIEW -->
+    <section class="view" id="view-merkliste">
+      <div class="section-head">
+        <h2>Meine Merkliste</h2>
+      </div>
+      <div id="merkliste-content"></div>
+    </section>
+
+  </main>
+
+  <nav class="tabbar">
+    <button class="tab-btn active" data-tab="home">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 11.5 12 4l9 7.5"/><path d="M5 10v9a1 1 0 0 0 1 1h4v-6h4v6h4a1 1 0 0 0 1-1v-9"/></svg>
+      <span>Start</span>
+    </button>
+    <button class="tab-btn" data-tab="list">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 4h11a2 2 0 0 1 2 2v14l-7-3-7 3V6a2 2 0 0 1 1-2Z"/></svg>
+      <span>Charaktere</span>
+    </button>
+    <button class="tab-btn" data-tab="merkliste">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 4h12v17l-6-4-6 4V4Z"/></svg>
+      <span>Merkliste</span>
+    </button>
+  </nav>
+
+  <!-- DETAIL VIEW -->
+  <div id="detail-view">
+    <div class="detail-header">
+      <button class="icon-btn" id="detail-back">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+      </button>
+      <button class="bookmark-toggle" id="detail-bookmark-btn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 4h12v17l-6-4-6 4V4Z"/></svg>
+        <span id="bookmark-label">Merken</span>
+      </button>
+    </div>
+    <div class="detail-body" id="detail-body"></div>
+  </div>
+
+</div>
+
+<script>
+/* ---------- DATEN ---------- */
+const CHARACTERS = [
+{id:"adam-eva",name:"Adam & Eva",testament:"AT",category:"Anfänge",era:"Schöpfung",
+teaser:"Die ersten Menschen im Garten Eden",
+story:"Gott erschafft Adam aus Erde und haucht ihm Leben ein, und formt Eva als seine Gefährtin. Im Garten Eden leben sie in enger Gemeinschaft mit Gott, bis eine Schlange Eva verführt, von der verbotenen Frucht der Erkenntnis zu essen. Adam isst ebenfalls davon. Ihr Ungehorsam trennt sie von der Nähe zu Gott, und sie müssen den Garten verlassen.",
+lesson:"Freiheit bedeutet auch Verantwortung. Schon die erste Geschichte der Bibel zeigt: Fehlentscheidungen haben Folgen, doch Gott verlässt die Menschen selbst dann nicht.",
+verseRef:"1. Mose 3"},
+
+{id:"noah",name:"Noah",testament:"AT",category:"Anfänge",era:"Vor der Sintflut",
+teaser:"Baute die Arche und rettete seine Familie",
+story:"In einer Zeit, in der die Menschheit sich von Gott abgewandt hat, findet Noah Gnade in Gottes Augen. Gott beauftragt ihn, eine riesige Arche zu bauen, um seine Familie und Tierpaare vor einer bevorstehenden Flut zu retten. Trotz Spott baut Noah über Jahre hinweg gehorsam weiter. Die Flut kommt, doch Noah und alle in der Arche überleben.",
+lesson:"Gehorsam gegenüber Gott braucht manchmal Geduld und Mut, auch wenn andere einen nicht verstehen. Am Ende steht ein Neuanfang.",
+verseRef:"1. Mose 6-9"},
+
+{id:"abraham",name:"Abraham",testament:"AT",category:"Erzväter",era:"Zeit der Erzväter",
+teaser:"Vater des Glaubens, verließ seine Heimat auf Gottes Ruf",
+story:"Gott ruft Abraham auf, seine Heimat zu verlassen und in ein unbekanntes Land zu ziehen, mit dem Versprechen, ihn zu einem großen Volk zu machen. Abraham gehorcht, obwohl er und seine Frau Sara kinderlos und schon alt sind. Jahre später wird ihm Sohn Isaak geboren. Später stellt Gott Abrahams Glauben auf die Probe, indem er ihn bittet, Isaak zu opfern &ndash; Abraham gehorcht, und im letzten Moment greift Gott ein.",
+lesson:"Glaube bedeutet, Gott zu vertrauen, auch wenn man den ganzen Weg noch nicht sehen kann. Abrahams Geschichte zeigt, dass Gott zu seinen Versprechen steht, selbst wenn es lange dauert.",
+verseRef:"1. Mose 12-22"},
+
+{id:"sara",name:"Sara",testament:"AT",category:"Frauen",era:"Zeit der Erzväter",
+teaser:"Abrahams Frau, wurde trotz hohen Alters Mutter",
+story:"Sara begleitet ihren Mann Abraham auf seiner langen Reise ins verheißene Land. Jahrzehntelang bleibt sie kinderlos und lacht sogar innerlich, als Gott ihr im hohen Alter noch einen Sohn verspricht. Dennoch erfüllt sich die Verheißung: Sie bringt Isaak zur Welt.",
+lesson:"Sara zeigt, dass Zweifel und Glaube nebeneinander bestehen können. Gottes Zusagen sind nicht an unsere Zeitpläne gebunden.",
+verseRef:"1. Mose 18; 21"},
+
+{id:"isaak",name:"Isaak",testament:"AT",category:"Erzväter",era:"Zeit der Erzväter",
+teaser:"Der verheißene Sohn Abrahams und Saras",
+story:"Isaak wird als Sohn der Verheißung geboren, nachdem seine Eltern jahrzehntelang auf ihn gewartet hatten. Als junger Mann erlebt er, wie sein Vater bereit ist, ihn auf Gottes Geheiß zu opfern, wird aber im letzten Augenblick verschont. Später heiratet er Rebekka und setzt den Bund Gottes mit seiner Familie fort.",
+lesson:"Manchmal sind wir Teil einer größeren Geschichte, die schon vor uns begonnen hat. Isaaks Leben erinnert daran, dass Vertrauen oft über Generationen weitergegeben wird.",
+verseRef:"1. Mose 22-27"},
+
+{id:"jakob",name:"Jakob",testament:"AT",category:"Erzväter",era:"Zeit der Erzväter",
+teaser:"Rang mit Gott und wurde zu Israel",
+story:"Jakob erschleicht sich mit List den Segen seines Vaters, der eigentlich seinem Zwillingsbruder Esau zusteht, und muss deshalb fliehen. Jahre später, auf dem Weg zurück in die Heimat, ringt er nachts an einem Fluss mit einem Unbekannten &ndash; und erkennt danach, dass er mit Gott selbst gerungen hat. Von da an trägt er den Namen Israel.",
+lesson:"Auch wer viele Fehler macht, kann von Gott verändert und neu benannt werden. Ein ehrlicher Ringkampf mit Gott führt oft zu echter Veränderung.",
+verseRef:"1. Mose 27-32"},
+
+{id:"josef",name:"Josef",testament:"AT",category:"Erzväter",era:"Zeit der Erzväter",
+teaser:"Von seinen Brüdern verkauft, wurde er Herrscher in Ägypten",
+story:"Josef, der Lieblingssohn Jakobs, wird von seinen eifersüchtigen Brüdern als Sklave nach Ägypten verkauft. Dort wird er ungerecht ins Gefängnis geworfen, steigt aber durch seine Gabe der Traumdeutung schließlich zum zweiten Mann Ägyptens auf. Als eine Hungersnot seine Brüder nach Ägypten treibt, vergibt er ihnen und rettet seine ganze Familie.",
+lesson:"Was Menschen böse meinen, kann Gott zum Guten wenden. Josefs Geschichte zeigt, dass Vergebung stärker ist als Rache.",
+verseRef:"1. Mose 37-50"},
+
+{id:"mose",name:"Mose",testament:"AT",category:"Führer",era:"Auszug aus Ägypten",
+teaser:"Führte das Volk Israel aus der Sklaverei",
+story:"Als Baby aus dem Nil gerettet, wächst Mose am ägyptischen Hof auf, flieht aber nach einem Totschlag in die Wüste. Dort begegnet ihm Gott in einem brennenden Dornbusch und beauftragt ihn, sein Volk aus der Sklaverei zu befreien. Trotz Selbstzweifeln konfrontiert Mose den Pharao, führt Israel durch das geteilte Meer und empfängt am Berg Sinai die Zehn Gebote.",
+lesson:"Gott beruft oft Menschen, die sich selbst für ungeeignet halten. Mose zeigt, dass Gottes Kraft gerade in unserer Schwäche wirken kann.",
+verseRef:"2. Mose 2-20"},
+
+{id:"aaron",name:"Aaron",testament:"AT",category:"Führer",era:"Auszug aus Ägypten",
+teaser:"Moses Bruder und erster Hohepriester",
+story:"Aaron steht seinem Bruder Mose als Sprecher vor dem Pharao zur Seite und begleitet das Volk durch die Wüste. Er wird zum ersten Hohepriester Israels ernannt, macht aber auch schwerwiegende Fehler, etwa als er dem Druck des Volkes nachgibt und das goldene Kalb formt.",
+lesson:"Selbst Menschen in geistlicher Verantwortung sind nicht vor Fehlern gefeit. Aarons Leben zeigt, wie wichtig es ist, dem Druck der Menge zu widerstehen.",
+verseRef:"2. Mose 4; 32"},
+
+{id:"mirjam",name:"Mirjam",testament:"AT",category:"Frauen",era:"Auszug aus Ägypten",
+teaser:"Prophetin und Schwester des Mose",
+story:"Als kleines Mädchen bewacht Mirjam ihren Bruder Mose im Binsenkörbchen am Nilufer und sorgt geschickt dafür, dass ihre Mutter ihn aufziehen darf. Als Erwachsene wird sie als Prophetin anerkannt und führt nach der Rettung am Meer die Frauen in einem Loblied an.",
+lesson:"Mirjam erinnert daran, dass mutiges, kluges Handeln im Kleinen große Auswirkungen haben kann.",
+verseRef:"2. Mose 2; 15"},
+
+{id:"josua",name:"Josua",testament:"AT",category:"Führer",era:"Landnahme",
+teaser:"Führte Israel ins verheißene Land",
+story:"Josua dient jahrelang als Moses Gehilfe und wird nach dessen Tod zum neuen Anführer Israels. Mit dem Auftrag „Sei stark und mutig“ führt er das Volk über den Jordan ins verheißene Land und erlebt den Fall der Stadt Jericho, deren Mauern nach einem von Gott angeordneten Umzug einstürzen.",
+lesson:"Mut wächst oft aus der Zusage, dass man nicht allein ist. Josuas Geschichte zeigt, wie wichtig es ist, an begonnenen Aufgaben treu dranzubleiben.",
+verseRef:"Josua 1; 6"},
+
+{id:"debora",name:"Debora",testament:"AT",category:"Frauen",era:"Zeit der Richter",
+teaser:"Richterin und Prophetin, die Israel in die Freiheit führte",
+story:"Debora ist die einzige Richterin Israels und wird für ihre Weisheit von weit her aufgesucht. Als das Volk unter der Unterdrückung eines kanaanäischen Königs leidet, ruft sie den zögernden Feldherrn Barak zum Kampf auf und begleitet ihn selbst in die Schlacht, die zur Befreiung Israels führt.",
+lesson:"Debora zeigt, dass Gott Menschen unabhängig von Erwartungen der Gesellschaft zu Führungspersonen beruft, wenn sie mutig Verantwortung übernehmen.",
+verseRef:"Richter 4-5"},
+
+{id:"gideon",name:"Gideon",testament:"AT",category:"Führer",era:"Zeit der Richter",
+teaser:"Vom zweifelnden Bauern zum Befreier Israels",
+story:"Gideon versteckt sich beim Dreschen von Weizen vor den Midianitern, als ein Engel ihn als „starken Helden“ anspricht. Trotz großer Selbstzweifel und mehrfachem Bitten um Zeichen von Gott führt er schließlich mit nur dreihundert Mann einen überraschenden Sieg gegen ein riesiges feindliches Heer.",
+lesson:"Gott braucht keine große Zahl oder makellose Helden, um Großes zu bewirken &ndash; oft zeigt sich seine Kraft gerade in kleinen, unscheinbaren Mitteln.",
+verseRef:"Richter 6-7"},
+
+{id:"ruth",name:"Ruth",testament:"AT",category:"Frauen",era:"Zeit der Richter",
+teaser:"Blieb ihrer Schwiegermutter treu und fand eine neue Heimat",
+story:"Nach dem Tod ihres Mannes entscheidet sich die Moabiterin Ruth, ihre verwitwete Schwiegermutter Noomi nicht zu verlassen, sondern mit ihr nach Bethlehem zu ziehen &ndash; in ein fremdes Land und Volk. Dort sammelt sie Ähren auf den Feldern des wohlhabenden Boas, der ihre Treue bemerkt und sie später heiratet. Sie wird zur Urgroßmutter König Davids.",
+lesson:"Treue und Loyalität, auch wenn sie schwierig sind, können zu Wegen führen, die man sich nie hätte vorstellen können.",
+verseRef:"Rut 1-4"},
+
+{id:"hanna",name:"Hanna",testament:"AT",category:"Frauen",era:"Zeit der Richter",
+teaser:"Betete um ein Kind und schenkte es Gott zurück",
+story:"Jahrelang leidet Hanna unter Kinderlosigkeit und wird deswegen verspottet. Im Tempel betet sie so inbrünstig um einen Sohn, dass der Priester Eli sie zunächst für betrunken hält. Gott erhört ihr Gebet mit der Geburt Samuels, den sie, ihrem Versprechen treu, schon als kleines Kind in den Dienst am Tempel gibt.",
+lesson:"Ehrliches, beharrliches Gebet in tiefem Schmerz kann Türen öffnen. Hanna zeigt auch, wie schwer und zugleich schön es ist, ein Versprechen an Gott zu halten.",
+verseRef:"1. Samuel 1-2"},
+
+{id:"samuel",name:"Samuel",testament:"AT",category:"Propheten",era:"Zeit der Könige",
+teaser:"Hörte als Kind Gottes Stimme im Tempel",
+story:"Als Kind im Tempel aufgewachsen, hört Samuel eines Nachts Gott ihn beim Namen rufen und lernt, seine Stimme zu erkennen und zu antworten: „Rede, Herr, denn dein Diener hört.“ Er wird zum letzten Richter und bedeutendsten Propheten seiner Zeit, salbt Saul und später David zum König.",
+lesson:"Gott spricht oft leise und in Momenten der Stille. Samuels Geschichte lädt dazu ein, zuzuhören und offen zu bleiben, auch wenn man jung oder unerfahren ist.",
+verseRef:"1. Samuel 3"},
+
+{id:"saul",name:"Saul",testament:"AT",category:"Könige",era:"Zeit der Könige",
+teaser:"Israels erster König, scheiterte an Stolz und Ungehorsam",
+story:"Saul wird als hochgewachsener, zunächst bescheidener Mann zum ersten König Israels gesalbt. Mit der Zeit wird er jedoch ungeduldig und ungehorsam gegenüber Gottes Anweisungen, und Eifersucht auf den jungen David zerfrisst ihn zunehmend. Sein Königtum endet tragisch in Niederlage und Verzweiflung.",
+lesson:"Sauls Leben warnt davor, wie Stolz und Kontrollverlust über die eigene Eifersucht eine vielversprechende Berufung zerstören können.",
+verseRef:"1. Samuel 9-31"},
+
+{id:"david",name:"David",testament:"AT",category:"Könige",era:"Zeit der Könige",
+teaser:"Vom Hirtenjungen zum König, besiegte Goliath",
+story:"Als jüngster Sohn eines Hirten wird David unerwartet zum König gesalbt und besiegt kurz darauf mit einer Steinschleuder den Riesen Goliath. Er wird zu Israels größtem König, ist aber auch für seine schwere Schuld verantwortlich, als er Batseba begehrt und ihren Mann in den Tod schickt. Nach Reue und Buße bleibt er dennoch „ein Mann nach Gottes Herzen“.",
+lesson:"Davids Leben zeigt, dass Größe im Glauben und tiefes Versagen nebeneinander bestehen können &ndash; und dass aufrichtige Reue immer möglich ist.",
+verseRef:"1. Samuel 16 &ndash; 2. Samuel 12"},
+
+{id:"batseba",name:"Batseba",testament:"AT",category:"Frauen",era:"Zeit der Könige",
+teaser:"Wurde später Mutter König Salomos",
+story:"Batseba wird von König David begehrt, während ihr Mann Uria im Krieg dient; David lässt ihn absichtlich in der Schlacht sterben. Trotz dieses schmerzvollen Anfangs wird sie später Davids Frau und Mutter Salomos, den sie klug für den Thron unterstützt.",
+lesson:"Auch aus gebrochenen und ungerechten Anfängen kann durch Gottes Gnade ein neuer Weg entstehen.",
+verseRef:"2. Samuel 11-12; 1. Könige 1"},
+
+{id:"salomo",name:"Salomo",testament:"AT",category:"Könige",era:"Zeit der Könige",
+teaser:"Bat um Weisheit und baute den ersten Tempel",
+story:"Als er von Gott einen Wunsch frei bekommt, bittet Salomo nicht um Reichtum oder ein langes Leben, sondern um ein „hörendes Herz“, um sein Volk weise zu regieren. Er wird für seine Weisheit weltberühmt, baut den prächtigen Tempel in Jerusalem, wendet sich aber im Alter fremden Göttern zu.",
+lesson:"Weisheit ist mehr wert als Reichtum, doch selbst die klügsten Menschen sind nicht vor Irrwegen geschützt.",
+verseRef:"1. Könige 3-11"},
+
+{id:"elia",name:"Elia",testament:"AT",category:"Propheten",era:"Geteiltes Königreich",
+teaser:"Prophet, der auf dem Karmel gegen Baal siegte",
+story:"Elia tritt mutig gegen König Ahab und die Baalspriester an und ruft auf dem Berg Karmel öffentlich Feuer vom Himmel herab, um zu zeigen, dass der Herr der wahre Gott ist. Doch kurz darauf verfällt er aus Angst vor Königin Isebel in tiefe Erschöpfung und Verzweiflung, bis Gott ihm in einem sanften Windhauch begegnet und ihn stärkt.",
+lesson:"Selbst die mutigsten Glaubenshelden erleben Erschöpfung und Zweifel. Elias Geschichte zeigt, dass Gott gerade dann Ruhe und Ermutigung schenkt.",
+verseRef:"1. Könige 18-19"},
+
+{id:"elisa",name:"Elisa",testament:"AT",category:"Propheten",era:"Geteiltes Königreich",
+teaser:"Übernahm Elias Auftrag mit doppeltem Geist",
+story:"Elisa verlässt seinen Bauernhof, um Elia als Diener und Nachfolger zu folgen. Nach Elias Himmelfahrt wirkt er zahlreiche Wunder &ndash; er heilt den aussätzigen Naaman, vermehrt Öl für eine verarmte Witwe und erweckt einen toten Jungen wieder zum Leben.",
+lesson:"Treue Nachfolge im Kleinen kann zu einem Leben führen, das anderen konkret Hoffnung und Heilung bringt.",
+verseRef:"2. Könige 2-5"},
+
+{id:"jesaja",name:"Jesaja",testament:"AT",category:"Propheten",era:"Geteiltes Königreich",
+teaser:"Prophet der Hoffnung inmitten des Gerichts",
+story:"Jesaja erlebt in einer eindrücklichen Vision Gottes Herrlichkeit im Tempel und erklärt sich trotz seiner Unwürdigkeit bereit, als Prophet zu dienen: „Hier bin ich, sende mich.“ Über Jahrzehnte warnt er Israel vor den Folgen der Untreue, verkündet aber zugleich eindringliche Verheißungen von Trost und einem kommenden Retter.",
+lesson:"Jesajas Berufung zeigt, dass Gott auch unsichere Menschen sendet, sobald sie bereit sind, „Hier bin ich“ zu sagen.",
+verseRef:"Jesaja 6"},
+
+{id:"jeremia",name:"Jeremia",testament:"AT",category:"Propheten",era:"Vor dem Exil",
+teaser:"Der weinende Prophet, treu trotz Ablehnung",
+story:"Jeremia wird schon als junger Mann berufen, dem Volk Juda unbequeme Warnungen zu verkünden, wird dafür verspottet, eingesperrt und in eine Zisterne geworfen. Trotz aller Ablehnung bleibt er über Jahrzehnte treu und beklagt zugleich das Leid seines Volkes zutiefst.",
+lesson:"Treue zu Gott bedeutet manchmal, unpopuläre Wahrheiten zu sagen, selbst wenn es einsam macht.",
+verseRef:"Jeremia 1; 38"},
+
+{id:"daniel",name:"Daniel",testament:"AT",category:"Propheten",era:"Babylonisches Exil",
+teaser:"Blieb treu in der Löwengrube und am fremden Hof",
+story:"Als junger Verbannter am babylonischen Hof weigert sich Daniel, sich mit unreinem Essen des Königs zu verunreinigen, und bleibt seinem Glauben treu. Später wird er wegen seines Gebets zu Gott in eine Löwengrube geworfen, doch Gott bewahrt ihn unversehrt. Er dient mehreren Königen als weiser Ratgeber und Traumdeuter.",
+lesson:"Standhaftigkeit im Kleinen bereitet oft auf größere Prüfungen vor. Daniel zeigt, dass Integrität selbst unter Druck möglich ist.",
+verseRef:"Daniel 1; 6"},
+
+{id:"jona",name:"Jona",testament:"AT",category:"Propheten",era:"Geteiltes Königreich",
+teaser:"Floh vor Gottes Auftrag und landete im Fisch",
+story:"Statt der ihm verhassten Stadt Ninive Gottes Botschaft zu bringen, flieht Jona mit einem Schiff in die entgegengesetzte Richtung. Ein gewaltiger Sturm und drei Tage im Bauch eines großen Fisches bringen ihn zur Besinnung. Er predigt schließlich doch in Ninive &ndash; und ärgert sich, als die Stadt sich bekehrt und Gott ihr vergibt.",
+lesson:"Jonas Geschichte konfrontiert uns mit der Frage, ob wir Gottes Gnade auch denen gönnen, die wir für unwürdig halten.",
+verseRef:"Jona 1-4"},
+
+{id:"esther",name:"Esther",testament:"AT",category:"Frauen",era:"Persisches Exil",
+teaser:"Rettete ihr Volk als Königin im Verborgenen",
+story:"Die jüdische Waise Esther wird unerwartet Königin von Persien, während sie ihre Herkunft zunächst verbirgt. Als der Höfling Haman die Vernichtung aller Juden plant, riskiert Esther ihr Leben, indem sie ungebeten vor den König tritt und ihr Volk rettet.",
+lesson:"„Wer weiß, ob du nicht gerade für diese Zeit an diese Stelle gelangt bist“ &ndash; Esthers Geschichte erinnert daran, dass mutiges Handeln zur rechten Zeit viel bewirken kann.",
+verseRef:"Ester 4-7"},
+
+{id:"hiob",name:"Hiob",testament:"AT",category:"Weisheit",era:"Unbestimmt",
+teaser:"Hielt an Gott fest trotz größten Leids",
+story:"Hiob, ein wohlhabender und gottesfürchtiger Mann, verliert innerhalb kurzer Zeit seinen Besitz, seine Kinder und seine Gesundheit. Seine Freunde suchen vergeblich nach Erklärungen für sein Leid, doch Hiob ringt ehrlich mit Gott, ohne ihn zu verfluchen. Am Ende begegnet ihm Gott selbst, und Hiob findet neuen Frieden.",
+lesson:"Hiobs Geschichte zeigt, dass Leid nicht immer erklärbar ist, aber ehrliches Ringen mit Gott einen tragfähigen Glauben bilden kann.",
+verseRef:"Hiob 1-2; 42"},
+
+{id:"johannes-taeufer",name:"Johannes der Täufer",testament:"NT",category:"Wegbereiter",era:"Leben Jesu",
+teaser:"Bereitete den Weg für den Messias",
+story:"Johannes lebt asketisch in der Wüste und ruft die Menschen eindringlich zur Umkehr auf. Er tauft im Jordan und erkennt schließlich Jesus als den, „der nach mir kommt“ und größer ist als er selbst. Seine offene Kritik am König Herodes kostet ihn später das Leben.",
+lesson:"Johannes zeigt beispielhafte Demut: Er stellt sich bewusst in den Hintergrund, damit Jesus im Vordergrund stehen kann.",
+verseRef:"Matthäus 3; Markus 6"},
+
+{id:"maria",name:"Maria, Mutter Jesu",testament:"NT",category:"Frauen",era:"Leben Jesu",
+teaser:"Sagte Ja zu Gottes ungewöhnlichem Plan",
+story:"Als junge Frau aus Nazaret erhält Maria die überraschende Nachricht eines Engels, dass sie den Sohn Gottes zur Welt bringen wird. Trotz der gesellschaftlichen Schwierigkeiten, die eine solche Schwangerschaft mit sich bringt, antwortet sie: „Mir geschehe, wie du gesagt hast.“ Sie begleitet Jesus durch sein ganzes Leben, bis unter das Kreuz.",
+lesson:"Marias Antwort zeigt, was es bedeutet, Gottes Plan zu vertrauen, auch wenn er den eigenen Erwartungen völlig widerspricht.",
+verseRef:"Lukas 1-2"},
+
+{id:"joseph-ehemann",name:"Josef, Mann Marias",testament:"NT",category:"Wegbereiter",era:"Leben Jesu",
+teaser:"Stiller, treuer Beschützer der heiligen Familie",
+story:"Josef, ein Zimmermann aus Nazaret, ist zunächst verunsichert, als seine Verlobte Maria schwanger wird, ist aber bereit, sie leise zu verlassen, um sie nicht bloßzustellen. Nach einer Engelserscheinung im Traum nimmt er Maria dennoch zur Frau, kümmert sich um das Kind Jesus und beschützt die Familie sogar auf der Flucht nach Ägypten.",
+lesson:"Josef handelt nie spektakulär, sondern still und treu &ndash; ein Beispiel dafür, dass Glauben oft in unauffälligem, verlässlichem Handeln sichtbar wird.",
+verseRef:"Matthäus 1-2"},
+
+{id:"jesus",name:"Jesus Christus",testament:"NT",category:"Zentrale Gestalt",era:"Leben Jesu",
+teaser:"Sohn Gottes, Lehrer, gekreuzigt und auferstanden",
+story:"Jesus wird in Bethlehem geboren, wächst in Nazaret auf und beginnt mit etwa dreißig Jahren seinen öffentlichen Dienst. Er lehrt in Gleichnissen, heilt Kranke, wendet sich Ausgestoßenen zu und ruft zur Liebe zu Gott und zum Nächsten auf. Nach seiner Kreuzigung in Jerusalem, mit der er die Schuld der Menschen trägt, wird er nach christlichem Glauben am dritten Tag von den Toten auferweckt.",
+lesson:"Jesu Leben und Botschaft laden dazu ein, Liebe, Vergebung und Hoffnung neu zu verstehen &ndash; als Geschenk, nicht als Leistung.",
+verseRef:"Die vier Evangelien"},
+
+{id:"petrus",name:"Petrus",testament:"NT",category:"Apostel",era:"Frühe Kirche",
+teaser:"Verleugnete Jesus und wurde dennoch zum Fels der Kirche",
+story:"Der Fischer Simon Petrus wird von Jesus berufen, „Menschenfischer“ zu werden, und gehört zu seinem engsten Kreis. In der Nacht vor der Kreuzigung verleugnet er Jesus aus Angst dreimal, bricht danach zusammen. Doch der auferstandene Jesus vergibt ihm und beauftragt ihn erneut, und Petrus wird zu einem der führenden Apostel der jungen Kirche.",
+lesson:"Petrus zeigt, dass Versagen nicht das letzte Wort haben muss. Vergebung kann aus einem gescheiterten Menschen einen mutigen Zeugen machen.",
+verseRef:"Matthäus 26; Johannes 21; Apostelgeschichte 2"},
+
+{id:"paulus",name:"Paulus",testament:"NT",category:"Apostel",era:"Frühe Kirche",
+teaser:"Vom Christenverfolger zum größten Missionar",
+story:"Als Saulus verfolgt er die junge christliche Gemeinde mit großem Eifer, bis ihm auf dem Weg nach Damaskus der auferstandene Jesus in einem gleißenden Licht erscheint. Von diesem Moment an wird er selbst zum überzeugten Nachfolger, bereist als Paulus weite Teile des Mittelmeerraums als Missionar und schreibt zahlreiche Briefe, die heute Teil des Neuen Testaments sind.",
+lesson:"Niemand steht außerhalb der Reichweite von Veränderung. Paulus zeigt, dass selbst eine radikale Kehrtwende möglich ist.",
+verseRef:"Apostelgeschichte 9; Römerbrief"},
+
+{id:"johannes",name:"Johannes, der Apostel",testament:"NT",category:"Apostel",era:"Frühe Kirche",
+teaser:"Der Jünger, den Jesus besonders liebte",
+story:"Johannes gehört gemeinsam mit Petrus und seinem Bruder Jakobus zum engsten Kreis um Jesus und wird im Evangelium als „der Jünger, den Jesus liebte“ beschrieben. Unter dem Kreuz übernimmt er die Fürsorge für Maria, die Mutter Jesu. Später schreibt er nach christlicher Überlieferung ein Evangelium, Briefe und die Offenbarung.",
+lesson:"Johannes' Leben ist geprägt von einer tiefen, persönlichen Beziehung zu Jesus &ndash; ein Beispiel dafür, wie Nähe zu Gott den ganzen Charakter prägen kann.",
+verseRef:"Johannes 13; 19; 21"},
+
+{id:"maria-magdalena",name:"Maria Magdalena",testament:"NT",category:"Frauen",era:"Leben Jesu",
+teaser:"Erste Zeugin der Auferstehung",
+story:"Maria aus Magdala wird von Jesus von schwerer innerer Not befreit und folgt ihm fortan als treue Jüngerin, auch bis unter das Kreuz. Am Ostermorgen ist sie die Erste, die das leere Grab findet und dem auferstandenen Jesus begegnet &ndash; er beauftragt sie, den anderen Jüngern die Nachricht zu bringen.",
+lesson:"Maria Magdalena zeigt, dass Gott gerade Menschen mit schwerer Vergangenheit eine besondere Aufgabe und Würde schenken kann.",
+verseRef:"Lukas 8; Johannes 20"},
+
+{id:"thomas",name:"Thomas",testament:"NT",category:"Apostel",era:"Leben Jesu",
+teaser:"Zweifelte, bis er selbst sah",
+story:"Thomas ist bei der ersten Erscheinung des auferstandenen Jesus vor den Jüngern nicht anwesend und weigert sich, ohne eigenen Beweis zu glauben. Eine Woche später erscheint Jesus erneut und lädt Thomas ein, seine Wunden zu berühren &ndash; woraufhin Thomas bekennt: „Mein Herr und mein Gott.“",
+lesson:"Zweifel ist kein Gegensatz zum Glauben, sondern kann Teil des Weges dorthin sein. Jesus begegnet Thomas in seiner Unsicherheit, statt ihn zu verurteilen.",
+verseRef:"Johannes 20"},
+
+{id:"judas",name:"Judas Iskariot",testament:"NT",category:"Apostel",era:"Leben Jesu",
+teaser:"Verriet Jesus für dreißig Silberstücke",
+story:"Judas gehört zu den zwölf engsten Jüngern Jesu und verwaltet ihre gemeinsame Kasse. Aus Gründen, die die Evangelien unterschiedlich deuten, verrät er Jesus für dreißig Silberstücke an die religiösen Führer. Nach der Verurteilung Jesu überwältigt ihn die Reue, und er nimmt sich das Leben.",
+lesson:"Judas' Geschichte ist eine ernste Warnung davor, wohin unkontrollierte Enttäuschung oder Habgier führen können, wenn sie nicht offen angesprochen werden.",
+verseRef:"Matthäus 26-27"},
+
+{id:"lazarus",name:"Lazarus",testament:"NT",category:"Weggefährten",era:"Leben Jesu",
+teaser:"Von Jesus vom Tod auferweckt",
+story:"Lazarus aus Betanien, Freund Jesu und Bruder von Marta und Maria, erkrankt schwer und stirbt, während Jesus noch unterwegs ist. Vier Tage nach der Beerdigung kommt Jesus und ruft Lazarus mit lauter Stimme aus dem Grab &ndash; eines der eindrücklichsten Wunder, das Jesu Macht über den Tod zeigt.",
+lesson:"Lazarus' Auferweckung zeigt, dass Jesus selbst dort noch Hoffnung bringt, wo menschlich gesehen alles zu spät scheint.",
+verseRef:"Johannes 11"},
+
+{id:"zachaeus",name:"Zachäus",testament:"NT",category:"Weggefährten",era:"Leben Jesu",
+teaser:"Bestechlicher Zollbeamter, der umkehrte",
+story:"Der kleinwüchsige und wohlhabende Zollbeamte Zachäus, verachtet wegen seiner Betrügereien, klettert vor Neugier auf einen Baum, um Jesus zu sehen. Zu seiner Überraschung lädt Jesus sich selbst zu ihm nach Hause ein. Berührt von dieser Begegnung, gibt Zachäus die Hälfte seines Besitzes den Armen und erstattet Betrogenen das Vierfache zurück.",
+lesson:"Zachäus zeigt, dass echte Begegnung mit Jesus konkrete, praktische Veränderung im Alltag bewirken kann.",
+verseRef:"Lukas 19"},
+
+{id:"timotheus",name:"Timotheus",testament:"NT",category:"Weggefährten",era:"Frühe Kirche",
+teaser:"Junger Mitarbeiter und geistlicher Sohn des Paulus",
+story:"Timotheus wächst mit einer gläubigen Mutter und Großmutter auf und schließt sich als junger Mann Paulus auf dessen Missionsreisen an. Paulus vertraut ihm später wichtige Aufgaben in den Gemeinden an und ermutigt ihn in zwei persönlichen Briefen, sich trotz seiner Jugend nicht entmutigen zu lassen.",
+lesson:"Timotheus zeigt, dass auch junge oder unerfahrene Menschen wichtige geistliche Verantwortung übernehmen können, wenn erfahrene Begleiter sie ermutigen.",
+verseRef:"1. & 2. Timotheus"}
+];
+
+const VERSES = [
+{text:"Der Herr ist mein Hirte, mir wird nichts mangeln.",ref:"Psalm 23,1"},
+{text:"Alle Dinge dienen denen zum Guten, die Gott lieben.",ref:"Römer 8,28"},
+{text:"Ich vermag alles durch den, der mich stark macht.",ref:"Philipper 4,13"},
+{text:"Sei getrost und unverzagt, denn der Herr, dein Gott, ist mit dir, wohin du auch gehst.",ref:"Josua 1,9"},
+{text:"Gott ist die Liebe, und wer in der Liebe bleibt, der bleibt in Gott.",ref:"1. Johannes 4,16"},
+{text:"Befiehl dem Herrn deine Wege und hoffe auf ihn, er wird's wohlmachen.",ref:"Psalm 37,5"},
+{text:"Fürchte dich nicht, denn ich bin mit dir.",ref:"Jesaja 41,10"},
+{text:"So sehr hat Gott die Welt geliebt, dass er seinen einzigen Sohn gab.",ref:"Johannes 3,16"},
+{text:"Die Liebe ist geduldig und freundlich, sie sucht nicht das Ihre.",ref:"1. Korinther 13,4-5"},
+{text:"Bittet, so wird euch gegeben; suchet, so werdet ihr finden.",ref:"Matthäus 7,7"},
+{text:"Der Herr ist nahe allen, die ihn anrufen in der Wahrheit.",ref:"Psalm 145,18"},
+{text:"Denn ich weiß wohl, was ich für Gedanken über euch habe, Gedanken des Friedens.",ref:"Jeremia 29,11"},
+{text:"Freut euch in dem Herrn allewege, und abermals sage ich: Freuet euch!",ref:"Philipper 4,4"},
+{text:"Meine Gnade genügt dir, denn meine Kraft vollendet sich in der Schwachheit.",ref:"2. Korinther 12,9"},
+{text:"Vertraue auf den Herrn von ganzem Herzen und verlass dich nicht auf deinen eigenen Verstand.",ref:"Sprüche 3,5"},
+{text:"Kommt her zu mir, alle, die ihr mühselig und beladen seid, ich will euch erquicken.",ref:"Matthäus 11,28"},
+{text:"Der Herr ist mein Licht und mein Heil, vor wem sollte ich mich fürchten?",ref:"Psalm 27,1"},
+{text:"Alles hat seine Zeit, und jedes Vorhaben unter dem Himmel hat seine Stunde.",ref:"Prediger 3,1"}
+];
+
+const CATEGORIES = ["Alle","Erzväter","Führer","Frauen","Könige","Propheten","Apostel","Weggefährten"];
+
+/* ---------- STATE ---------- */
+let userData = {bookmarks:[], notes:{}};
+let currentTab = "home";
+let currentCategory = "Alle";
+let currentSearch = "";
+let openCharId = null;
+let dataLoaded = false;
+
+/* ---------- STORAGE ---------- */
+async function loadUserData(){
+  try{
+    const res = await window.storage.get('bibel-app-data', false);
+    if(res && res.value){
+      userData = JSON.parse(res.value);
+      if(!userData.bookmarks) userData.bookmarks = [];
+      if(!userData.notes) userData.notes = {};
+    }
+  }catch(e){
+    userData = {bookmarks:[], notes:{}};
+  }
+  dataLoaded = true;
+}
+async function saveUserData(){
+  try{
+    await window.storage.set('bibel-app-data', JSON.stringify(userData), false);
+  }catch(e){
+    console.error('Speichern fehlgeschlagen', e);
+  }
+}
+
+/* ---------- HELPERS ---------- */
+function getChar(id){ return CHARACTERS.find(c=>c.id===id); }
+function isBookmarked(id){ return userData.bookmarks.includes(id); }
+function toggleBookmark(id){
+  if(isBookmarked(id)){
+    userData.bookmarks = userData.bookmarks.filter(x=>x!==id);
+  } else {
+    userData.bookmarks.push(id);
+  }
+  saveUserData();
+}
+function dayOfYear(){
+  const now = new Date();
+  const start = new Date(now.getFullYear(),0,0);
+  const diff = now - start;
+  return Math.floor(diff / 86400000);
+}
+
+function initial(name){
+  return name.replace(/[^A-Za-zÀ-ÿ]/,'').charAt(0).toUpperCase();
+}
+
+/* ---------- RENDER: VERSE ---------- */
+function renderVerse(){
+  const v = VERSES[dayOfYear() % VERSES.length];
+  document.getElementById('verse-text').textContent = '„' + v.text + '“';
+  document.getElementById('verse-ref').textContent = v.ref;
+}
+
+/* ---------- RENDER: HOME ---------- */
+function renderHome(){
+  const featuredIds = ["david","ruth","paulus","esther"];
+  const wrap = document.getElementById('featured-scroll');
+  wrap.innerHTML = '';
+  featuredIds.forEach(id=>{
+    const c = getChar(id);
+    if(!c) return;
+    const el = document.createElement('div');
+    el.className = 'featured-card';
+    el.innerHTML = `
+      <div class="char-initial">${initial(c.name)}</div>
+      <p class="char-name">${c.name}</p>
+      <p class="char-meta">${c.testament} &middot; ${c.category}</p>
+    `;
+    el.addEventListener('click', ()=>openDetail(c.id));
+    wrap.appendChild(el);
+  });
+
+  const catWrap = document.getElementById('home-categories');
+  catWrap.innerHTML = '';
+  CATEGORIES.filter(c=>c!=="Alle").forEach(cat=>{
+    const chip = document.createElement('div');
+    chip.className = 'chip';
+    chip.textContent = cat;
+    chip.addEventListener('click', ()=>{
+      currentCategory = cat;
+      currentSearch = '';
+      switchTab('list');
+    });
+    catWrap.appendChild(chip);
+  });
+}
+
+/* ---------- RENDER: LIST ---------- */
+function renderChips(){
+  const wrap = document.getElementById('list-chips');
+  wrap.innerHTML = '';
+  CATEGORIES.forEach(cat=>{
+    const chip = document.createElement('div');
+    chip.className = 'chip' + (cat===currentCategory ? ' active' : '');
+    chip.textContent = cat;
+    chip.addEventListener('click', ()=>{
+      currentCategory = cat;
+      renderChips();
+      renderList();
+    });
+    wrap.appendChild(chip);
+  });
+}
+
+function filteredCharacters(){
+  const q = currentSearch.trim().toLowerCase();
+  return CHARACTERS.filter(c=>{
+    const matchCat = currentCategory==="Alle" || c.category===currentCategory;
+    if(!matchCat) return false;
+    if(!q) return true;
+    return c.name.toLowerCase().includes(q) ||
+           c.teaser.toLowerCase().includes(q) ||
+           c.story.toLowerCase().includes(q) ||
+           c.category.toLowerCase().includes(q) ||
+           c.era.toLowerCase().includes(q);
+  });
+}
+
+function renderList(){
+  const wrap = document.getElementById('char-list');
+  const list = filteredCharacters();
+  if(list.length===0){
+    wrap.innerHTML = '<p class="empty-note">Keine Charaktere gefunden.<br>Versuche einen anderen Suchbegriff.</p>';
+    return;
+  }
+  wrap.innerHTML = '';
+  list.forEach(c=>{
+    const el = document.createElement('div');
+    el.className = 'char-card';
+    el.innerHTML = `
+      <div class="char-initial">${initial(c.name)}</div>
+      <div class="char-info">
+        <p class="char-name">${c.name}</p>
+        <p class="char-meta">${c.testament} &middot; ${c.category}</p>
+        <p class="char-teaser">${c.teaser}</p>
+      </div>
+      <svg class="bm-star ${isBookmarked(c.id)?'on':''}" viewBox="0 0 24 24" fill="currentColor"><path d="M6 4h12v17l-6-4-6 4V4Z"/></svg>
+    `;
+    el.addEventListener('click', ()=>openDetail(c.id));
+    wrap.appendChild(el);
+  });
+}
+
+/* ---------- RENDER: MERKLISTE ---------- */
+function renderMerkliste(){
+  const wrap = document.getElementById('merkliste-content');
+  const ids = userData.bookmarks;
+  if(ids.length===0){
+    wrap.innerHTML = '<p class="empty-note">Du hast noch keine Charaktere gemerkt.<br>Tippe beim Lesen einer Geschichte auf „Merken“, um sie hier zu sammeln.</p>';
+    return;
+  }
+  wrap.innerHTML = '';
+  ids.forEach(id=>{
+    const c = getChar(id);
+    if(!c) return;
+    const note = userData.notes[id];
+    const el = document.createElement('div');
+    el.className = 'merk-card';
+    el.innerHTML = `
+      <div class="merk-top">
+        <div class="char-initial">${initial(c.name)}</div>
+        <div class="char-info">
+          <p class="char-name">${c.name}</p>
+          <p class="char-meta">${c.testament} &middot; ${c.category}</p>
+        </div>
+      </div>
+      ${note ? `<p class="merk-note-preview">${note}</p>` : ''}
+    `;
+    el.addEventListener('click', ()=>openDetail(c.id));
+    wrap.appendChild(el);
+  });
+}
+
+/* ---------- DETAIL VIEW ---------- */
+function openDetail(id){
+  openCharId = id;
+  const c = getChar(id);
+  const body = document.getElementById('detail-body');
+  const note = userData.notes[id] || '';
+  body.innerHTML = `
+    <div class="illum-frame"><span class="illum-letter">${initial(c.name)}</span></div>
+    <h1 class="detail-name">${c.name}</h1>
+    <div class="detail-badges">
+      <span class="badge testament">${c.testament==="AT" ? "Altes Testament" : "Neues Testament"}</span>
+      <span class="badge">${c.category}</span>
+      <span class="badge">${c.era}</span>
+    </div>
+
+    <h3 class="detail-h3">Die Geschichte</h3>
+    <p class="story-text">${c.story}</p>
+
+    <h3 class="detail-h3">Was uns das sagt</h3>
+    <div class="lesson-box">${c.lesson}</div>
+
+    <h3 class="detail-h3">Bibelstelle</h3>
+    <p class="verse-line">${c.verseRef}</p>
+
+    <h3 class="detail-h3">Meine Notizen</h3>
+    <textarea class="notes-area" id="note-textarea" placeholder="Was denkst du über diese Geschichte? Halte hier deine Gedanken fest&hellip;">${note}</textarea>
+    <div class="save-row">
+      <button class="save-btn" id="save-note-btn">Speichern</button>
+      <span class="save-hint" id="save-hint"></span>
+    </div>
+  `;
+  updateBookmarkButton();
+  document.getElementById('save-note-btn').addEventListener('click', saveNote);
+  document.getElementById('detail-view').classList.add('open');
+  document.getElementById('detail-view').scrollTop = 0;
+}
+
+function closeDetail(){
+  document.getElementById('detail-view').classList.remove('open');
+  openCharId = null;
+  renderList();
+  renderMerkliste();
+}
+
+function saveNote(){
+  const text = document.getElementById('note-textarea').value.trim();
+  if(text){
+    userData.notes[openCharId] = text;
+  } else {
+    delete userData.notes[openCharId];
+  }
+  saveUserData();
+  const hint = document.getElementById('save-hint');
+  hint.textContent = 'Gespeichert';
+  setTimeout(()=>{ if(hint) hint.textContent=''; }, 1800);
+}
+
+function updateBookmarkButton(){
+  const btn = document.getElementById('detail-bookmark-btn');
+  const label = document.getElementById('bookmark-label');
+  if(isBookmarked(openCharId)){
+    btn.classList.add('active');
+    label.textContent = 'Gemerkt';
+  } else {
+    btn.classList.remove('active');
+    label.textContent = 'Merken';
+  }
+}
+
+document.getElementById('detail-bookmark-btn').addEventListener('click', ()=>{
+  toggleBookmark(openCharId);
+  updateBookmarkButton();
+});
+document.getElementById('detail-back').addEventListener('click', closeDetail);
+
+/* ---------- TABS ---------- */
+function switchTab(tab){
+  currentTab = tab;
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('view-' + tab).classList.add('active');
+  document.querySelector(`.tab-btn[data-tab="${tab}"]`).classList.add('active');
+  if(tab==='list'){ renderChips(); renderList(); }
+  if(tab==='merkliste'){ renderMerkliste(); }
+  window.scrollTo(0,0);
+}
+document.querySelectorAll('.tab-btn').forEach(btn=>{
+  btn.addEventListener('click', ()=>switchTab(btn.dataset.tab));
+});
+document.getElementById('home-see-all').addEventListener('click', ()=>{
+  currentCategory='Alle'; currentSearch=''; switchTab('list');
+});
+document.getElementById('header-search-btn').addEventListener('click', ()=>{
+  switchTab('list');
+  setTimeout(()=>document.getElementById('search-input').focus(), 200);
+});
+document.getElementById('search-input').addEventListener('input', (e)=>{
+  currentSearch = e.target.value;
+  renderList();
+});
+
+/* ---------- INIT ---------- */
+async function init(){
+  renderVerse();
+  renderHome();
+  await loadUserData();
+  renderList();
+  renderMerkliste();
+}
+init();
+</script>
+</body>
+</html>
